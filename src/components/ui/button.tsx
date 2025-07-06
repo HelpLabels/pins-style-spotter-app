@@ -9,21 +9,23 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-soft",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-soft",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground shadow-soft",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-soft",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        hero: "bg-gradient-hero text-white hover:shadow-floating transform hover:scale-105 transition-all duration-300 shadow-soft",
+        fashion: "bg-fashion-pink text-white hover:bg-fashion-purple hover:shadow-glow transition-all duration-300 shadow-soft",
+        camera: "bg-gradient-primary text-white hover:shadow-floating hover:animate-glow rounded-full shadow-soft",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
+        xl: "h-14 rounded-lg px-10 text-base",
         icon: "h-10 w-10",
+        "icon-lg": "h-14 w-14",
       },
     },
     defaultVariants: {
