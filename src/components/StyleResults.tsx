@@ -147,7 +147,7 @@ export const StyleResults = ({ searchImage, onBack }: StyleResultsProps) => {
                 </svg>
               </Button>
               <Badge 
-                className="absolute top-2 left-2 bg-fashion-pink text-white text-xs"
+                className="absolute top-2 left-2 bg-pins-burgundy text-white text-xs"
               >
                 {item.similarity}% match
               </Badge>
@@ -158,7 +158,7 @@ export const StyleResults = ({ searchImage, onBack }: StyleResultsProps) => {
               <div className="flex items-center justify-between">
                 <span className="font-bold text-primary">{item.price}</span>
                 <Button 
-                  variant="fashion" 
+                  variant="pins" 
                   size="sm"
                   className="text-xs px-3 h-7"
                 >

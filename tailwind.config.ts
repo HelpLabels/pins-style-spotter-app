@@ -57,11 +57,11 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				fashion: {
-					pink: 'hsl(var(--fashion-pink))',
-					purple: 'hsl(var(--fashion-purple))',
-					rose: 'hsl(var(--fashion-rose))',
-					neutral: 'hsl(var(--fashion-neutral))'
+				pins: {
+					burgundy: 'hsl(var(--pins-burgundy))',
+					red: 'hsl(var(--pins-red))',
+					dark: 'hsl(var(--pins-dark))',
+					light: 'hsl(var(--pins-light))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',

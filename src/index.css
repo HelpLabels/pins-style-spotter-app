@@ -17,17 +17,17 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 330 15% 15%;
 
-    --primary: 340 75% 55%;
+    --primary: 355 65% 45%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 340 85% 70%;
+    --primary-glow: 355 75% 60%;
 
-    --secondary: 340 20% 92%;
-    --secondary-foreground: 340 15% 25%;
+    --secondary: 355 20% 92%;
+    --secondary-foreground: 355 25% 25%;
 
-    --muted: 340 10% 95%;
-    --muted-foreground: 340 8% 45%;
+    --muted: 355 10% 95%;
+    --muted-foreground: 355 8% 45%;
 
-    --accent: 320 60% 65%;
+    --accent: 10 70% 55%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 75% 60%;
@@ -36,20 +36,20 @@ All colors MUST be HSL.
     --success: 120 60% 50%;
     --success-foreground: 0 0% 100%;
 
-    --border: 340 15% 90%;
-    --input: 340 15% 94%;
-    --ring: 340 75% 55%;
+    --border: 355 15% 90%;
+    --input: 355 15% 94%;
+    --ring: 355 65% 45%;
 
-    /* Fashion App Specific Colors */
-    --fashion-pink: 340 75% 55%;
-    --fashion-purple: 280 60% 65%;  
-    --fashion-rose: 350 70% 70%;
-    --fashion-neutral: 340 5% 50%;
+    /* Pins App Specific Colors - Based on Logo */
+    --pins-burgundy: 355 65% 45%;
+    --pins-red: 10 70% 55%;  
+    --pins-dark: 0 0% 15%;
+    --pins-light: 355 25% 95%;
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--fashion-pink)), hsl(var(--fashion-purple)));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100% / 0.8), hsl(340 20% 98%));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--pins-burgundy)), hsl(var(--pins-red)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--pins-burgundy)), hsl(var(--pins-red)));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100% / 0.9), hsl(355 25% 98%));
     
     /* Shadows */
     --shadow-soft: 0 4px 20px hsl(340 20% 80% / 0.15);
