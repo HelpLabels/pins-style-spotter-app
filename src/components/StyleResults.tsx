@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface StyleItem {
   id: string;
@@ -18,10 +20,96 @@ interface StyleResultsProps {
 }
 
 export const StyleResults = ({ searchImage, onBack }: StyleResultsProps) => {
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
+
+  useEffect(() => {
+    searchPinterest();
+  }, [searchImage]);
+
+  const searchPinterest = async () => {
+    try {
+      setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke('pinterest-search', {
+        body: {
+          imageUrl: searchImage,
+          searchQuery: 'fashion style similar items'
+        },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      setResults(response.data?.results || mockResults);
+    } catch (error) {
+      console.error('Search error:', error);
+      // Fallback to mock data
+      setResults(mockResults);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFavorite = async (item: any) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      if (favorites.has(item.id)) {
+        // Remove from favorites
+        await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('item_id', item.id);
+        
+        setFavorites(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(item.id);
+          return newSet;
+        });
+        
+        toast({
+          title: "Removed from favorites",
+          description: "Item removed from your favorites.",
+        });
+      } else {
+        // Add to favorites
+        await supabase
+          .from('favorites')
+          .insert({
+            user_id: user.id,
+            item_id: item.id,
+            item_data: item
+          });
+        
+        setFavorites(prev => new Set([...prev, item.id]));
+        
+        toast({
+          title: "Added to favorites",
+          description: "Item saved to your favorites!",
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update favorites. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Mock data for similar items
-  const mockResults: StyleItem[] = [
+  const mockResults = [
     {
       id: '1',
       title: 'Floral Midi Dress',
@@ -72,15 +160,6 @@ export const StyleResults = ({ searchImage, onBack }: StyleResultsProps) => {
     }
   ];
 
-  const toggleFavorite = (itemId: string) => {
-    const newFavorites = new Set(favorites);
-    if (newFavorites.has(itemId)) {
-      newFavorites.delete(itemId);
-    } else {
-      newFavorites.add(itemId);
-    }
-    setFavorites(newFavorites);
-  };
 
   return (
     <div className="space-y-6 p-6 animate-fade-in">
@@ -104,7 +183,7 @@ export const StyleResults = ({ searchImage, onBack }: StyleResultsProps) => {
           />
           <div>
             <h2 className="text-xl font-bold text-foreground">Similar Items Found</h2>
-            <p className="text-muted-foreground">{mockResults.length} matches from Pinterest</p>
+            <p className="text-muted-foreground">{results.length} matches from Pinterest</p>
           </div>
         </div>
       </div>
@@ -118,8 +197,16 @@ export const StyleResults = ({ searchImage, onBack }: StyleResultsProps) => {
       </div>
 
       {/* Results grid */}
-      <div className="grid grid-cols-2 gap-4">
-        {mockResults.map((item, index) => (
+      {loading ? (
+        <div className="col-span-2 flex justify-center items-center py-12">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="w-6 h-6 border-2 border-pins-burgundy border-t-transparent rounded-full animate-spin"></div>
+            Searching for similar items...
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4">
+          {results.map((item, index) => (
           <Card 
             key={item.id} 
             className="overflow-hidden shadow-card hover:shadow-floating transition-all duration-300 hover:scale-105 animate-scale-in"
@@ -132,7 +219,7 @@ export const StyleResults = ({ searchImage, onBack }: StyleResultsProps) => {
                 className="w-full h-48 object-cover"
               />
               <Button
-                onClick={() => toggleFavorite(item.id)}
+                onClick={() => toggleFavorite(item)}
                 variant="ghost"
                 size="icon"
                 className="absolute top-2 right-2 bg-white/80 hover:bg-white shadow-soft"
@@ -149,7 +236,7 @@ export const StyleResults = ({ searchImage, onBack }: StyleResultsProps) => {
               <Badge 
                 className="absolute top-2 left-2 bg-pins-burgundy text-white text-xs"
               >
-                {item.similarity}% match
+                {item.similarity || '95'}% match
               </Badge>
             </div>
             <div className="p-3 space-y-2">
@@ -166,9 +253,10 @@ export const StyleResults = ({ searchImage, onBack }: StyleResultsProps) => {
                 </Button>
               </div>
             </div>
-          </Card>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Load more button */}
       <div className="text-center pt-4">

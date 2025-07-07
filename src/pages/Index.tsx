@@ -1,26 +1,72 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { OnboardingFlow } from '@/components/OnboardingFlow';
 import { EmailCapture } from '@/components/EmailCapture';
+import { AuthPage } from '@/components/AuthPage';
 import { CameraUpload } from '@/components/CameraUpload';
 import { StyleResults } from '@/components/StyleResults';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 
 const Index = () => {
   const [showEmailCapture, setShowEmailCapture] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [activeTab, setActiveTab] = useState('camera');
   const [searchImage, setSearchImage] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    // Check if user is already authenticated
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        setSession(session);
+        setShowAuth(false);
+        setShowEmailCapture(false);
+        setShowOnboarding(false);
+      }
+    };
+    
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          setUser(session.user);
+          setSession(session);
+          setShowAuth(false);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setSession(null);
+          setShowEmailCapture(true);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleEmailSubmitted = () => {
     setShowEmailCapture(false);
     setShowOnboarding(true);
   };
 
-  const handleOnboardingComplete = ()=> {
+  const handleOnboardingComplete = () => {
     setShowOnboarding(false);
+    setShowAuth(true);
+  };
+
+  const handleAuthSuccess = (user: User, session: Session) => {
+    setUser(user);
+    setSession(session);
+    setShowAuth(false);
   };
 
   const handleImageCapture = (imageUrl: string) => {
@@ -39,6 +85,15 @@ const Index = () => {
 
   if (showOnboarding) {
     return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+  }
+
+  if (showAuth) {
+    return <AuthPage onAuthSuccess={handleAuthSuccess} />;
+  }
+
+  // Require authentication for main app
+  if (!user || !session) {
+    return <AuthPage onAuthSuccess={handleAuthSuccess} />;
   }
 
   const renderContent = () => {
@@ -278,18 +333,19 @@ const Index = () => {
               <Card className="p-4 shadow-soft">
                 <h3 className="font-semibold text-foreground mb-3">Account</h3>
                 <div className="space-y-3">
-                  <Button variant="hero" className="w-full justify-between">
-                    <span>Sign In with Google</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-between">
-                    <span>Sign In with Email</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Button>
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">Hello, {user?.email}</p>
+                    <Button 
+                      variant="hero" 
+                      className="w-full justify-between"
+                      onClick={() => supabase.auth.signOut()}
+                    >
+                      <span>Sign Out</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                    </Button>
+                  </div>
                 </div>
               </Card>
             </div>

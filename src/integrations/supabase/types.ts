@@ -14,7 +14,138 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      closet_items: {
+        Row: {
+          brand: string | null
+          category: string | null
+          color: string | null
+          created_at: string
+          id: string
+          image_url: string
+          notes: string | null
+          user_id: string | null
+        }
+        Insert: {
+          brand?: string | null
+          category?: string | null
+          color?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          notes?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          brand?: string | null
+          category?: string | null
+          color?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          notes?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      emails: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          item_data: Json
+          item_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_data: Json
+          item_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_data?: Json
+          item_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      searches: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          results: Json | null
+          search_query: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          results?: Json | null
+          search_query?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          results?: Json | null
+          search_query?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

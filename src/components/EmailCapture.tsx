@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface EmailCaptureProps {
@@ -15,26 +16,38 @@ export const EmailCapture = ({ onEmailSubmitted }: EmailCaptureProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      // For now, just simulate submission. Later connect to Supabase
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Welcome to Pins!",
-        description: "Thanks for joining our early access program.",
-      });
-      
-      onEmailSubmitted();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+    if (email) {
+      setIsLoading(true);
+      try {
+        const { error } = await supabase
+          .from('emails')
+          .insert({ email });
+        
+        if (error) {
+          console.error('Error storing email:', error);
+          toast({
+            title: "Error",
+            description: "Failed to save email. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "Welcome to Pins!",
+          description: "Your email has been saved. Get ready to discover amazing fashion!",
+        });
+        onEmailSubmitted();
+      } catch (error) {
+        console.error('Error:', error);
+        toast({
+          title: "Error",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
