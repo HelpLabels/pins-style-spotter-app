@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { AuthPage } from '@/components/AuthPage';
 import { OnboardingFlow } from '@/components/OnboardingFlow';
 import { EmailCapture } from '@/components/EmailCapture';
 import { CameraUpload } from '@/components/CameraUpload';
@@ -8,11 +11,36 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
   const [showEmailCapture, setShowEmailCapture] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [activeTab, setActiveTab] = useState('camera');
   const [searchImage, setSearchImage] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    // Check for existing session on mount
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user || null);
+      setIsLoading(false);
+    };
+
+    checkSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleAuthSuccess = () => {
+    // User is now authenticated, proceed to email capture
+    setShowEmailCapture(true);
+  };
 
   const handleEmailSubmitted = () => {
     setShowEmailCapture(false);
@@ -33,6 +61,29 @@ const Index = () => {
     setSearchImage(null);
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setShowEmailCapture(true);
+    setShowOnboarding(false);
+    setShowResults(false);
+    setSearchImage(null);
+    setActiveTab('camera');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 mx-auto border-4 border-pins-burgundy border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthPage onAuthSuccess={handleAuthSuccess} />;
+  }
   if (showEmailCapture) {
     return <EmailCapture onEmailSubmitted={handleEmailSubmitted} />;
   }
@@ -284,11 +335,11 @@ const Index = () => {
                     <Button 
                       variant="hero" 
                       className="w-full justify-between"
-                      onClick={() => setShowEmailCapture(true)}
+                      onClick={handleSignOut}
                     >
-                      <span>Start Over</span>
+                      <span>Sign Out</span>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                       </svg>
                     </Button>
                   </div>
