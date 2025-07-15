@@ -45,62 +45,89 @@ export const AuthPage = ({ onAuthSuccess }: AuthPageProps) => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      if (isSignUp) {
-        const redirectUrl = `${window.location.origin}/`;
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: {
-              full_name: fullName,
-            }
-          }
-        });
-
-        if (error) throw error;
-
-        toast({
-          title: "Check your email",
-          description: "We sent you a confirmation link to complete signup.",
-        });
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) throw error;
-      }
-    } catch (error: any) {
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       toast({
-        title: "Authentication Error",
-        description: error.message,
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
         variant: "destructive",
       });
-    } finally {
       setLoading(false);
+      return;
     }
+
+    if (password.length < 6) {
+      toast({
+        title: "Invalid Password",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Simulate authentication for demo
+    setTimeout(() => {
+      const dummyUser = {
+        id: 'demo-user-' + Date.now(),
+        email: email,
+        app_metadata: {},
+        user_metadata: { full_name: fullName || 'Demo User' },
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } as User;
+
+      const dummySession = {
+        access_token: 'demo-token',
+        refresh_token: 'demo-refresh',
+        expires_in: 3600,
+        token_type: 'bearer',
+        user: dummyUser
+      } as Session;
+
+      toast({
+        title: isSignUp ? "Account Created!" : "Welcome Back!",
+        description: "You're now signed in. Enjoy exploring fashion!",
+      });
+      
+      onAuthSuccess(dummyUser, dummySession);
+      setLoading(false);
+    }, 1000);
   };
 
   const handleGoogleAuth = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        }
-      });
+    setLoading(true);
+    
+    // Simulate Google auth for demo
+    setTimeout(() => {
+      const dummyUser = {
+        id: 'google-user-' + Date.now(),
+        email: 'demo@gmail.com',
+        app_metadata: {},
+        user_metadata: { full_name: 'Google Demo User' },
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } as User;
 
-      if (error) throw error;
-    } catch (error: any) {
+      const dummySession = {
+        access_token: 'google-demo-token',
+        refresh_token: 'google-demo-refresh',
+        expires_in: 3600,
+        token_type: 'bearer',
+        user: dummyUser
+      } as Session;
+
       toast({
-        title: "Authentication Error",
-        description: error.message,
-        variant: "destructive",
+        title: "Google Sign-in Successful!",
+        description: "Welcome! You're now signed in with Google.",
       });
-    }
+      
+      onAuthSuccess(dummyUser, dummySession);
+      setLoading(false);
+    }, 1500);
   };
 
   return (
