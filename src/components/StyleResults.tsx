@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { VisionAnalysis } from '@/components/VisionAnalysis';
 
 interface StyleItem {
   id: string;
@@ -23,6 +24,8 @@ export const StyleResults = ({ searchImage, onBack }: StyleResultsProps) => {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [visionInsights, setVisionInsights] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -108,6 +111,16 @@ export const StyleResults = ({ searchImage, onBack }: StyleResultsProps) => {
     }
   };
 
+  const handleAnalysisComplete = (analysis: any) => {
+    setVisionInsights(analysis);
+    // Use vision insights to improve search results
+    if (analysis.fashionInsights) {
+      const insights = analysis.fashionInsights;
+      // Filter or enhance results based on AI insights
+      console.log('Fashion insights:', insights);
+    }
+  };
+
   // Mock data for similar items
   const mockResults = [
     {
@@ -184,9 +197,45 @@ export const StyleResults = ({ searchImage, onBack }: StyleResultsProps) => {
           <div>
             <h2 className="text-xl font-bold text-foreground">Similar Items Found</h2>
             <p className="text-muted-foreground">{results.length} matches from Pinterest</p>
+            <Button
+              onClick={() => setShowAnalysis(!showAnalysis)}
+              variant="outline"
+              size="sm"
+              className="mt-2"
+            >
+              {showAnalysis ? 'Hide' : 'Show'} AI Analysis
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* AI Vision Analysis */}
+      {showAnalysis && (
+        <div className="animate-fade-in">
+          <VisionAnalysis 
+            imageUrl={searchImage} 
+            onAnalysisComplete={handleAnalysisComplete}
+          />
+        </div>
+      )}
+
+      {/* Enhanced results with AI insights */}
+      {visionInsights && (
+        <Card className="p-4 bg-gradient-card shadow-soft">
+          <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+            <svg className="w-4 h-4 text-pins-burgundy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            AI-Enhanced Search
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Based on AI analysis, this appears to be a {visionInsights.fashionInsights?.category} 
+            {visionInsights.fashionInsights?.style?.length > 0 && 
+              ` with ${visionInsights.fashionInsights.style.join(', ')} style`
+            }.
+          </p>
+        </Card>
+      )}
 
       {/* Filter badges */}
       <div className="flex space-x-2 overflow-x-auto pb-2">
@@ -194,6 +243,11 @@ export const StyleResults = ({ searchImage, onBack }: StyleResultsProps) => {
         <Badge variant="outline" className="whitespace-nowrap">Under $100</Badge>
         <Badge variant="outline" className="whitespace-nowrap">Designer</Badge>
         <Badge variant="outline" className="whitespace-nowrap">Similar Color</Badge>
+        {visionInsights?.fashionInsights?.colors?.length > 0 && (
+          <Badge variant="outline" className="whitespace-nowrap">
+            {visionInsights.fashionInsights.colors[0]} tones
+          </Badge>
+        )}
       </div>
 
       {/* Results grid */}

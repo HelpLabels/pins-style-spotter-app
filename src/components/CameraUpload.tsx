@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { VisionAnalysis } from '@/components/VisionAnalysis';
 
 interface CameraUploadProps {
   onImageCapture: (imageUrl: string) => void;
@@ -9,6 +10,7 @@ interface CameraUploadProps {
 export const CameraUpload = ({ onImageCapture }: CameraUploadProps) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showQuickAnalysis, setShowQuickAnalysis] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,16 +60,34 @@ export const CameraUpload = ({ onImageCapture }: CameraUploadProps) => {
             )}
           </div>
           <div className="p-4">
-            <Button 
-              onClick={() => {
-                setPreview(null);
-                if (fileInputRef.current) fileInputRef.current.value = '';
-              }}
-              variant="outline" 
-              className="w-full"
-            >
-              Try Another Photo
-            </Button>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setShowQuickAnalysis(!showQuickAnalysis)}
+                  variant="pins"
+                  className="flex-1"
+                >
+                  {showQuickAnalysis ? 'Hide' : 'Quick'} Analysis
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setPreview(null);
+                    setShowQuickAnalysis(false);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                  }}
+                  variant="outline" 
+                  className="flex-1"
+                >
+                  Try Another
+                </Button>
+              </div>
+              
+              {showQuickAnalysis && (
+                <div className="animate-fade-in">
+                  <VisionAnalysis imageUrl={preview} />
+                </div>
+              )}
+            </div>
           </div>
         </Card>
       ) : (
