@@ -18,36 +18,28 @@ export const EmailCapture = ({ onEmailSubmitted }: EmailCaptureProps) => {
     e.preventDefault();
     if (email) {
       setIsLoading(true);
-      try {
-        const { error } = await supabase
-          .from('emails')
-          .insert({ email });
-        
-        if (error) {
-          console.error('Error storing email:', error);
-          toast({
-            title: "Error",
-            description: "Failed to save email. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-
+      
+      // Simple validation for email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
         toast({
-          title: "Welcome to Pins!",
-          description: "Your email has been saved. Get ready to discover amazing fashion!",
-        });
-        onEmailSubmitted();
-      } catch (error) {
-        console.error('Error:', error);
-        toast({
-          title: "Error",
-          description: "Something went wrong. Please try again.",
+          title: "Invalid Email",
+          description: "Please enter a valid email address.",
           variant: "destructive",
         });
-      } finally {
         setIsLoading(false);
+        return;
       }
+
+      // For demo purposes, accept any valid email and proceed
+      setTimeout(() => {
+        toast({
+          title: "Welcome to Pins!",
+          description: "Get ready to discover amazing fashion!",
+        });
+        onEmailSubmitted();
+        setIsLoading(false);
+      }, 1000);
     }
   };
 
